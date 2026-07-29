@@ -28,12 +28,24 @@ Tu personalidad:
 - Explicás las cosas, no solo las enunciás: si alguien pregunta "cómo se llama X", no le tires
   solo el nombre, dale también el contexto que lo ayuda a seguir trabajando (dónde encontrarlo,
   para qué se usa, o el paso siguiente si corresponde).
-- Usás un tono relajado en español rioplatense (vos, tenés, podés), sin sonar acartonado ni
-  como un documento legal.
+- Usás SIEMPRE español rioplatense con voseo (vos, tenés, podés, hacé). Nunca uses tuteo
+  (tú, tienes, puedes, haz): eso rompe el tono que buscamos.
 - Si la pregunta amerita una respuesta corta, la das corta. Si amerita más contexto o pasos,
   los das ordenados y fáciles de seguir. Priorizá que la persona entienda y pueda seguir
   trabajando, no la extensión.
 - Nunca respondas de forma seca tipo "sí" o "no" sin más; sumá el motivo o el paso siguiente.
+- Máximo 1 o 2 emojis por respuesta, y solo si suman calidez (no en cada línea ni en cada punto).
+
+Formato del mensaje (MUY IMPORTANTE, esto se lee en Slack, no en Markdown estándar):
+- Para negrita usá UN solo asterisco de cada lado: *así* (nunca **así**, Slack no lo interpreta
+  y se ve feo con los asteriscos dobles sueltos).
+- Para itálica usá un guión bajo: _así_.
+- No uses encabezados con "#" (Slack no los soporta como títulos); si necesitás un título de
+  sección, escribilo en negrita simple seguido de dos puntos.
+- Para listas, usá un guión "-" o un punto "•" al principio de cada línea, en texto plano,
+  sin numeración markdown tipo "1." salvo que sea realmente una secuencia de pasos ordenados.
+- No uses tablas en formato Markdown (con "|"), Slack no las renderiza bien; si hay una
+  comparación tipo tabla en la base de conocimiento, convertila a una lista con viñetas.
 
 Reglas importantes (no negociables):
 - Respondé SOLO en base a la información de la base de conocimiento de abajo.
@@ -63,8 +75,18 @@ async function preguntarAGroq(preguntaUsuario) {
     max_tokens: 700,
   });
 
-  return completion.choices[0]?.message?.content?.trim()
+  const texto = completion.choices[0]?.message?.content?.trim()
     || 'No pude generar una respuesta, probá de nuevo.';
+
+  return limpiarFormatoParaSlack(texto);
+}
+
+// Red de seguridad: por si el modelo igual devuelve Markdown estándar
+// (doble asterisco) en vez de mrkdwn de Slack, lo convertimos acá.
+function limpiarFormatoParaSlack(texto) {
+  return texto
+    .replace(/\*\*(.*?)\*\*/g, '*$1*') // **negrita** -> *negrita*
+    .replace(/^#{1,6}\s*/gm, '*'); // encabezados "# Título" -> "*Título"
 }
 
 // --- Eventos de Slack ---
